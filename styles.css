@@ -1,0 +1,77 @@
+:root {
+  
+    --primary: #2563eb;
+  
+    --primary-dark: #1d4ed8;
+  
+    --bg-main: #f8fafc;
+  
+    --text-main: #0f172a;
+  
+    --text-muted: #64748b;
+  
+    --border-color: #e2e8f0;
+  
+}
+
+
+
+body {
+  
+    background-color: var(--bg-main);
+  
+    color: var(--text-main);
+  
+    -webkit-font-smoothing: antialiased;
+  
+    -moz-osx-font-smoothing: grayscale;
+  
+}
+
+
+
+.tax-card {
+  
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+}
+
+
+
+.tax-card:hover {
+  
+    transform: translateY(-2px);
+  
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+}
+
+
+
+.input-focus-ring:focus {
+  
+    box-shadow: 0 0 0 2px var(--primary);
+  
+}
+
+
+
+[x-cloak] { display: none !important; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
