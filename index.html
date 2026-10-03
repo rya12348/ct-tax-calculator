@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+  
+<html lang="en">
+  
+<head>
+  
+    <meta charset="UTF-8">
+  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title>CT Property Tax Calculator | Accurate & Fast</title>
+  
+    <script src="https://cdn.tailwindcss.com"></script>
+  
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+    <style>
+  
+        body { font-family: 'Inter', sans-serif; }
+
+        [x-cloak] { display: none !important; }
+          
+    </style>
+          
+</head>
+          
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+          
+
+          
+    <!-- Header -->
+          
+    <header class="bg-white border-b border-slate-200 py-6">
+          
+        <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
+          
+            <h1 class="text-2xl font-800 tracking-tight text-slate-900">CT<span class="text-blue-600">TaxCalc</span></h1>
+          
+            <div class="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded-full">FY 2026-27 Estimates</div>
+          
+        </div>
+          
+    </header>
+          
+
+          
+    <main class="max-w-4xl mx-auto px-4 py-8" x-data="taxCalculator()">
+          
+
+          
+        <!-- Main Tool Toggle -->
+          
+        <div class="flex gap-2 mb-8 bg-slate-200 p-1 rounded-xl w-fit">
+          
+            <button @click="mode = 'single'" :class="mode === 'single' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-600'" class="px-4 py-2 rounded-lg text-sm font-bold transition-all">Single Town</button>
+          
+            <button @click="mode = 'compare'" :class="mode === 'compare' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-600'" class="px-4 py-2 rounded-lg text-sm font-bold transition-all">Compare Towns</button>
+          
+        </div>
+          
+
+          
+        <!-- SINGLE TOWN MODE -->
+          
+        <div x-show="mode === 'single'" x-cloak class="grid md:grid-cols-2 gap-8">
+          
+            <div class="space-y-6">
+          
+                <div>
+          
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Select Town</label>
+          
+                    <select x-model="singleTown" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+          
+                        <option value="">-- Choose a Town --</option>
+          
+                        <template x-for="town in townList" :key="town">
+          
+                            <option :value="town" x-text="town"></option>
+          
+                        </template>
+          
+                    </select>
+          
+                </div>
+          
+
+          
+                <div>
+          
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Home Value / Assessed Value ($)</label>
+
+                    <input type="number" x-model.number="homeValue" placeholder="e.g. 350000" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+          
+                </div>
+          
+
+          
+                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-3">
+          
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Exemptions</h3>
+          
+                    <label class="flex items-center gap-3 cursor-pointer group">
+          
+                        <input type="checkbox" x-model="exemptions.senior" class="w-4 h-4 text-blue-600 rounded">
+          
+                        <span class="text-sm text-slate-600 group-hover:text-slate-900">Senior Exemption</span>
+          
+                    </label>
+          
+                    <label class="flex items-center gap-3 cursor-pointer group">
+          
+                        <input type="checkbox" x-model="exemptions.veteran" class="w-4 h-4 text-blue-600 rounded">
+          
+                        <span class="text-sm text-slate-600 group-hover:text-slate-900">Veteran Exemption</span>
+          
+                    </label>
+          
+                </div>
+          
+            </div>
+          
+
+          
+            <div class="bg-blue-600 text-white p-8 rounded-3xl shadow-xl flex flex-col justify-center text-center">
+          
+                <p class="text-blue-100 font-semibold mb-2">Estimated Annual Tax</p>
+
+                <h2 class="text-5xl font-800 mb-4" x-text="formatCurrency(calculateTax(singleTown, homeValue))"></h2>
+
+                <div class="grid grid-cols-2 gap-4 border-t border-blue-500 pt-6">
+          
+                    <div>
+          
+                        <p class="text-blue-200 text-xs uppercase font-bold">Monthly</p>
+          
+                        <p class="text-xl font-bold" x-text="formatCurrency(calculateTax(singleTown, homeValue) / 12)"></p>
+          
+                    </div>
+          
+                    <div>
+          
+                        <p class="text-blue-200 text-xs uppercase font-bold">Mill Rate</p>
+          
+                        <p class="text-xl font-bold" x-text="getRate(singleTown) + ' m'"></p>
+          
+                    </div>
+          
+                </div>
+          
+            </div>
+          
+        </div>
+          
+
+          
+        <!-- COMPARE MODE -->
+          
+        <div x-show="mode === 'compare'" x-cloak class="space-y-8">
+          
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+                <div class="md:col-span-1">
+          
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Home Value ($)</label>
+          
+                    <input type="number" x-model.number="homeValue" class="w-full p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none">
+          
+                </div>
+          
+                <div>
+          
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Town A</label>
+          
+                    <select x-model="compareA" class="w-full p-3 rounded-xl border border-slate-300 outline-none">
+          
+                        <option value="">-- Select --</option>
+          
+                        <template x-for="town in townList" :key="town"><option :value="town" x-text="town"></option></template>
+          
+                    </select>
+          
+                </div>
+          
+                <div>
+          
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Town B</label>
+          
+                    <select x-model="compareB" class="w-full p-3 rounded-xl border border-slate-300 outline-none">
+          
+                        <option value="">-- Select --</option>
+          
+                        <template x-for="town in townList" :key="town"><option :value="town" x-text="town"></option></template>
+          
+                    </select>
+          
+                </div>
+          
+            </div>
+          
+
+          
+            <div class="grid md:grid-cols-2 gap-6" x-show="compareA && compareB">
+          
+                <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          
+                    <h3 class="text-xl font-bold mb-4" x-text="compareA"></h3>
+          
+                    <p class="text-3xl font-800 text-blue-600 mb-2" x-text="formatCurrency(calculateTax(compareA, homeValue))"></p>
+          
+                    <p class="text-sm text-slate-500">Mill Rate: <span x-text="getRate(compareA)"></span></p>
+          
+                </div>
+          
+                <div class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm">
+          
+                    <h3 class="text-xl font-bold mb-4" x-text="compareB"></h3>
+          
+                    <p class="text-3xl font-800 text-blue-600 mb-2" x-text="formatCurrency(calculateTax(compareB, homeValue))"></p>
+          
+                    <p class="text-sm text-slate-500">Mill Rate: <span x-text="getRate(compareB)"></span></p>
+          
+                </div>
+          
+            </div>
+          
+        </div>
+          
+
+          
+        <!-- Footer / Trust Layer -->
+          
+        <footer class="mt-16 pt-8 border-t border-slate-200 text-center">
+          
+            <p class="text-sm text-slate-500 max-w-2xl mx-auto leading-relaxed">
+          
+                <strong class="text-slate-700">Disclaimer:</strong> These are estimates based on FY 2026-27 mill rates. Actual taxes may vary based on assessed value, exemptions, and specific municipal districts. For official billing, please contact your local Town Hall.
+          
+            </p>
+          
+            <div class="mt-4 flex justify-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+          
+                <span class="bg-slate-100 px-2 py-1 rounded">No Ads</span>
+          
+                <span class="bg-slate-100 px-2 py-1 rounded">No Tracking</span>
+          
+                <span class="bg-slate-100 px-2 py-1 rounded">No Sign-up</span>
+          
+            </div>
+          
+        </footer>
+          
+    </main>
+          
+
+          
+    <script>
+          
+        function taxCalculator() {
+
+            return {
+              
+                mode: 'single',
+              
+                singleTown: '',
+              
+                compareA: '',
+              
+                compareB: '',
+              
+                homeValue: 350000,
+              
+                exemptions: { senior: false, veteran: false },
+              
+
+              
+                townData: {
+
+                    "Somers": 23.46,
+                      
+                    "Coventry": 24.21,
+                      
+                    "Ellington": 25.42,
+                      
+                    "Tolland": 27.78,
+                      
+                    "Glastonbury": 33.73,
+                      
+                    "Bolton": 33.97,
+                      
+                    "Vernon": 36.31,
+                      
+                    "South Windsor": 37.01,
+                      
+                    "Manchester": 41.00,
+                      
+                    "East Hartford": 47.24,
+                      
+                      },
+                      
+
+                      
+                get townList() {
+
+                    return Object.keys(this.townData).sort();
+
+                    },
+
+
+
+                getRate(town) {
+                  
+                    return this.townData[town] || 0;
+
+                },
+
+
+
+                calculateTax(town, value) {
+
+                    if (!town || !value) return 0;
+
+                    const rate = this.getRate(town);
+
+
+
+                    let adjustedValue = value;
+
+                    if (this.exemptions.senior) adjustedValue -= 10000; 
+
+                    if (this.exemptions.veteran) adjustedValue -= 5000;
+
+
+
+                    return (adjustedValue * rate) / 1000;
+
+                },
+
+
+
+                formatCurrency(val) {
+                  
+                    return new Intl.NumberFormat('en-US', {
+                      
+                        style: 'currency',
+                      
+                        currency: 'USD',
+                      
+                        maximumFractionDigits: 0
+                      
+                      }).format(val);
+
+                }
+
+            }
+
+                            }
+
+    </script>
+      
+</body>
+      
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
